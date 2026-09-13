@@ -1,14 +1,110 @@
 [
- {"id":"QA015","subtype":"calendar_offset","finding":"The model cited the five-month coupon timing rule but added the calendar offset incorrectly: July plus five months is December, not January.","evidence_terms":["5개월이 경과한 월","1일"]},
- {"id":"QA035","subtype":"procedure_actor","finding":"The retrieved enrollment sequence includes the employer's first corporate contribution before the employee opens the account. The answer switched the actor from the employer to the employee.","evidence_terms":["기업지원금 1 회차 납부"]},
- {"id":"QA036","subtype":"conditional_rate_aggregation","finding":"Two other customers using the account's referral number yield 1.0 percentage point. The extra 0.5 percentage point in example 1 requires the account holder to have entered another referral number, which the question excludes. The local diagnostic explanation itself partially conflated these components; its answer-generation category is reasonable, but its detailed explanation must not be treated as authoritative.","evidence_terms":["신규 시 추천번호 입력하고(연0.5%p)","다른사람 2명(연1.0%p)"]},
- {"id":"QA048","subtype":"omitted_divisor","finding":"The context includes the delay formula and the 60-month maximum contract term. The model computed 180 minus 60 but omitted division by 60; the requested extension is 2 days.","evidence_terms":["순지연일수를 계약 월수로 나눈","60개월"]},
- {"id":"QA049","subtype":"omitted_divisor","finding":"The model computed the 24-day net delay but did not divide by the 12 contract months. Its own explanation names the division rule before contradicting it in the conclusion.","evidence_terms":["순지연일수를 계약 월수로 나눈","12개월"]},
- {"id":"QA050","subtype":"extremum_and_multiplication","finding":"The answer quoted the allowed monthly savings range yet said that its minimum could not be determined. It consequently omitted the requested 12-million-won principal calculation.","evidence_terms":["1백만원","12개월"]},
- {"id":"QA062","subtype":"omitted_divisor","finding":"The retrieved rule requires net delay divided by contract months. The model returned the 216-day numerator instead of dividing by the 72-month maximum term to obtain 3 days.","evidence_terms":["순지연일수를 계약 월수로 나눈","72개월"]},
- {"id":"QA063","subtype":"extremum_and_multiplication","finding":"The context contains the six-month minimum term and the minimum monthly deposit. The answer omitted the concrete 60,000-won principal, even though it correctly rejected an extra payment solely because prepayment days exceeded delay days.","evidence_terms":["6개월이상 72개월이내","최저 1 만원이상"]},
- {"id":"QA073","subtype":"specific_exception","finding":"The special term explicitly waives the foreign-cash withdrawal charge, and the waiver appears among retrieved facts. The answer applied the general fee schedule instead of the product-specific waiver.","evidence_terms":["외화현찰로 출금 시 현찰수수료가 면제"]},
- {"id":"QA076","subtype":"rule_selection_and_rounding","finding":"The retrieved general terms state that unpaid installments trigger the early-termination rate even when claimed after maturity. The context also contains the 90-percent multiplier and rate truncation instruction. The answer selected the ordinary maturity/post-maturity rule instead.","evidence_terms":["월저축금을 임금하지 않고 만기일 이후에 청구","기본이율 X 90%","소수점 셋째 자리에서 절사"]},
- {"id":"QA100","subtype":"deadline_ordering","finding":"The answer itself listed one month, seven days, and one day before maturity, but ordered them incorrectly. Annotated-document recall is only two thirds for this item, yet the required values are available from alternative retrieved evidence; the missing annotated document alone is not proof of a retrieval-caused error.","evidence_terms":["만기 1개월 전","만기 7일 전"]},
- {"id":"QA112","subtype":"temporal_condition_scope","finding":"The one-year lookback applies to the entire KB Star eligibility condition. The answer treated currently holding only a transaction account as sufficient, despite a term deposit held three months earlier. Both products' relevant conditions and the lookback definition are in the retrieved context.","evidence_terms":["최근 1년","첫 거래","보유하지 않았거나"]}
+  {
+    "id": "QA015",
+    "subtype": "calendar_offset",
+    "finding": "The model cited the five-month coupon timing rule but added the calendar offset incorrectly: July plus five months is December, not January.",
+    "evidence_terms": [
+      "5개월이 경과한 월",
+      "1일"
+    ]
+  },
+  {
+    "id": "QA035",
+    "subtype": "procedure_actor",
+    "finding": "The retrieved enrollment sequence includes the employer's first corporate contribution before the employee opens the account. The answer switched the actor from the employer to the employee.",
+    "evidence_terms": [
+      "기업지원금 1 회차 납부"
+    ]
+  },
+  {
+    "id": "QA036",
+    "subtype": "conditional_rate_aggregation",
+    "finding": "Two other customers using the account's referral number yield 1.0 percentage point. The extra 0.5 percentage point in example 1 requires the account holder to have entered another referral number, which the question excludes. The local diagnostic explanation itself partially conflated these components; its answer-generation category is reasonable, but its detailed explanation must not be treated as authoritative.",
+    "evidence_terms": [
+      "신규 시 추천번호 입력하고(연0.5%p)",
+      "다른사람 2명(연1.0%p)"
+    ]
+  },
+  {
+    "id": "QA048",
+    "subtype": "omitted_divisor",
+    "finding": "The context includes the delay formula and the 60-month maximum contract term. The model computed 180 minus 60 but omitted division by 60; the requested extension is 2 days.",
+    "evidence_terms": [
+      "순지연일수를 계약 월수로 나눈",
+      "60개월"
+    ]
+  },
+  {
+    "id": "QA049",
+    "subtype": "omitted_divisor",
+    "finding": "The model computed the 24-day net delay but did not divide by the contract period of one year (12 months). Its own explanation names the division rule before contradicting it in the conclusion. The original context states the duration in years, so unit normalization is also required.",
+    "evidence_terms": [
+      "순지연일수를 계약 월수로 나눈",
+      "계약기간은 1년으로"
+    ]
+  },
+  {
+    "id": "QA050",
+    "subtype": "extremum_and_multiplication",
+    "finding": "The answer quoted the allowed monthly savings range yet said that its minimum could not be determined. It consequently omitted the requested 12-million-won principal calculation.",
+    "evidence_terms": [
+      "1백만원",
+      "12개월"
+    ]
+  },
+  {
+    "id": "QA062",
+    "subtype": "omitted_divisor",
+    "finding": "The retrieved rule requires net delay divided by contract months. The model returned the 216-day numerator instead of dividing by the 72-month maximum term to obtain 3 days.",
+    "evidence_terms": [
+      "순지연일수를 계약 월수로 나눈",
+      "72개월"
+    ]
+  },
+  {
+    "id": "QA063",
+    "subtype": "extremum_and_multiplication",
+    "finding": "The context contains the six-month minimum term and the minimum monthly deposit. The answer omitted the concrete 60,000-won principal, even though it correctly rejected an extra payment solely because prepayment days exceeded delay days.",
+    "evidence_terms": [
+      "6개월이상 72개월이내",
+      "최저 1 만원이상"
+    ]
+  },
+  {
+    "id": "QA073",
+    "subtype": "specific_exception",
+    "finding": "The special term explicitly waives the foreign-cash withdrawal charge, and the waiver appears among retrieved facts. The answer applied the general fee schedule instead of the product-specific waiver.",
+    "evidence_terms": [
+      "외화현찰로 출금 시 현찰수수료가 면제"
+    ]
+  },
+  {
+    "id": "QA076",
+    "subtype": "rule_selection_and_rounding",
+    "finding": "The retrieved general terms state that unpaid installments trigger the early-termination rate even when claimed after maturity. The context also contains the 90-percent multiplier and rate truncation instruction. The answer selected the ordinary maturity/post-maturity rule instead.",
+    "evidence_terms": [
+      "월저축금을 임금하지 않고 만기일 이후에 청구",
+      "기본이율 X 90%",
+      "소수점 셋째 자리에서 절사"
+    ]
+  },
+  {
+    "id": "QA100",
+    "subtype": "deadline_ordering",
+    "finding": "The answer itself listed one month, seven days, and one day before maturity, but ordered them incorrectly. Annotated-document recall is only two thirds for this item, yet the required values are available from alternative retrieved evidence; the missing annotated document alone is not proof of a retrieval-caused error.",
+    "evidence_terms": [
+      "만기 1개월 전",
+      "만기 7일 전"
+    ]
+  },
+  {
+    "id": "QA112",
+    "subtype": "temporal_condition_scope",
+    "finding": "The one-year lookback applies to the entire KB Star eligibility condition. The answer treated currently holding only a transaction account as sufficient, despite a term deposit held three months earlier. Both products' relevant conditions and the lookback definition are in the retrieved context.",
+    "evidence_terms": [
+      "최근 1년",
+      "첫 거래",
+      "보유하지 않았거나"
+    ]
+  }
 ]

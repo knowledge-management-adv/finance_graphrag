@@ -44,6 +44,18 @@ def main():
  lines += ['## Implications for V2','', 'Prioritize evidence-linked calculators, explicit temporal/conditional scope, and special-term exception handling. Then reduce repeated context. Add an independent judge or human-adjudicated sample before claiming a reliable deployment accuracy.','', '[Bounded V2 proposal](../../../docs/v2_proposal.md) · [Execution and parser amendment record](../../../docs/v1_implementation_notes.md)','', 'In the original V1 run, the same-model diagnostic for QA036 contains a partially mistaken explanation of the referral-rate components. The source gives 0.5 percentage point for entering another referral number and 1.0 for two others entering the account’s number. The question excludes the former. This illustrates why generated diagnostic prose also needs evidence review.','']
  (out/'reports/post_evaluation_audit.md').write_text('\n'.join(lines),encoding='utf-8')
  marker='\n## Post-evaluation audit and execution notes\n'
- body=report.read_text();body=body.split(marker)[0];body+=marker+'\nRead the [post-evaluation audit](post_evaluation_audit.md) for quote-only evidence metrics, the preserved V1 manual review, and a correction to one local diagnostic explanation. The original score is unchanged. The [execution notes](../../../docs/v1_implementation_notes.md) document the two pre-evaluation parser amendments, and the [V2 proposal](../../../docs/v2_proposal.md) gives a bounded improvement plan.\n';report.write_text(body,encoding='utf-8')
+ body=report.read_text();body=body.split(marker)[0]
+ freeze_note='Two pre-evaluation response-parser amendments are recorded in the execution notes; they preserved the graph, retrieval, model prompts, and raw generations. No answer or grade was edited by Codex.'
+ if freeze_note not in body:body=body.replace('## Benchmark isolation and methodology\n','## Benchmark isolation and methodology\n\n'+freeze_note+'\n')
+ metric_note=f'The four original bigram values below include serialized annotation metadata/HTML. For quote-only plain-text metrics, see the [post-evaluation audit](post_evaluation_audit.md): final-context coverage is {100*means["context"]:.1f}%. Neither metric changes the binary score.'
+ if metric_note not in body:body=body.replace('## Retrieval diagnostics\n','## Retrieval diagnostics\n\n'+metric_note+'\n')
+ extra_title='### Additional source-reviewed failures'
+ if manual and extra_title not in body:
+  lookup={r['id']:r for r in results};extra=[extra_title,'']
+  for case in manual:
+   if case['id'] in ('QA048','QA073','QA112'):
+    r=lookup[case['id']];extra += [f'- [{case["id"]}](questions/{case["id"]}.md): '+case['finding'],'']
+  body=body.replace('## Proposed V2 — bounded follow-up','\n'.join(extra)+'\n## Proposed V2 — bounded follow-up')
+ body+=marker+'\nRead the [post-evaluation audit](post_evaluation_audit.md) for quote-only evidence metrics, the preserved V1 manual review, and a correction to one local diagnostic explanation. The original score is unchanged. The [execution notes](../../../docs/v1_implementation_notes.md) document the two pre-evaluation parser amendments, and the [V2 proposal](../../../docs/v2_proposal.md) gives a bounded improvement plan.\n';report.write_text(body,encoding='utf-8')
  after={str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in frozen_files};assert before==after;write_json(out/'evaluation/post_audit_integrity.json',{'created_at':now(),'core_artifacts_unchanged':True,'sha256':after});g.close();print(json.dumps({'report':str(report),'normalized_coverage':means,'unchanged_score':summary['accuracy'],'identical_statement_duplicates':duplicates},ensure_ascii=False))
 if __name__=='__main__':main()
