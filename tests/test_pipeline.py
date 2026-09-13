@@ -79,7 +79,7 @@ class EndToEndTests(unittest.TestCase):
     result={}
     for rid,prompt in requests:
      if stage=='extraction':obj={'facts':[{'type':'Rule','name':'계약 조건','units':re.findall(r'\[(U\d+)\]',prompt)}]}
-     elif stage=='qa':obj={'answer':'12개월' if rid=='test_correct' else '24개월','citations':['C:'+re.search(r'\[C:([^\]]+)\]',prompt).group(1)],'insufficient_evidence':False}
+     elif stage=='qa':obj={'answer':'12개월' if rid=='test_correct' else '24개월','citations':['[C:'+re.search(r'\[C:([^\]]+)\]',prompt).group(1)+']'],'insufficient_evidence':False}
      elif stage=='evaluation':obj={'correct':rid=='test_correct','reason':'Synthetic fixture judgment'}
      elif stage=='diagnosis':obj={'primary_category':'answer_generation','reason':'Synthetic fixture error','confidence':'high','secondary_categories':[]}
      else:raise AssertionError(stage)
