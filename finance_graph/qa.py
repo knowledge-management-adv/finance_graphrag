@@ -29,6 +29,7 @@ def answer_questions(cfg,llm,limit=None):
   citations=obj.get('citations');insufficient=obj.get('insufficient_evidence')
   if not isinstance(citations,list) or any(not isinstance(c,str) for c in citations):raise ValueError('citations must be a list of evidence IDs')
   if type(insufficient) is not bool:raise ValueError('insufficient_evidence must be boolean')
+  citations=[c.strip().removeprefix('[').removesuffix(']').strip() for c in citations]
   allowed=set(traces[qid]['citation_map'])
   if any(c not in allowed for c in citations):raise ValueError('Only cite IDs that were provided in the context')
   if not citations and not insufficient:raise ValueError('Provide at least one supporting citation or explicitly mark insufficient_evidence')
@@ -47,6 +48,7 @@ def answer_one(cfg,llm,question):
   if not isinstance(obj.get('answer'),str) or not obj['answer'].strip():raise ValueError('A nonempty answer is required')
   if type(obj.get('insufficient_evidence')) is not bool:raise ValueError('insufficient_evidence must be boolean')
   citations=obj.get('citations');allowed=set(trace['citation_map'])
+  if isinstance(citations,list) and all(isinstance(c,str) for c in citations):citations=[c.strip().removeprefix('[').removesuffix(']').strip() for c in citations]
   if not isinstance(citations,list) or any(c not in allowed for c in citations):raise ValueError('Cite only provided evidence IDs')
   if not citations and not obj['insufficient_evidence']:raise ValueError('Cite supporting evidence or mark insufficiency')
   obj['citations']=[trace['citation_map'][c] for c in citations]
