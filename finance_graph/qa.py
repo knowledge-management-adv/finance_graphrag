@@ -29,10 +29,10 @@ def answer_questions(cfg,llm,limit=None):
   citations=obj.get('citations');insufficient=obj.get('insufficient_evidence')
   if not isinstance(citations,list) or any(not isinstance(c,str) for c in citations):raise ValueError('citations must be a list of evidence IDs')
   if type(insufficient) is not bool:raise ValueError('insufficient_evidence must be boolean')
-  allowed={'C:'+i for i in traces[qid]['chunk_ids']}|{'F:'+i for i in traces[qid]['fact_ids']}
+  allowed=set(traces[qid]['citation_map'])
   if any(c not in allowed for c in citations):raise ValueError('Only cite IDs that were provided in the context')
   if not citations and not insufficient:raise ValueError('Provide at least one supporting citation or explicitly mark insufficient_evidence')
-  return {'answer':obj['answer'],'citations':list(dict.fromkeys(citations)),'insufficient_evidence':insufficient}
+  return {'answer':obj['answer'],'citations':list(dict.fromkeys(traces[qid]['citation_map'][c] for c in citations)),'insufficient_evidence':insufficient}
  good,errors=validated_generations(llm,'qa',requests,cfg['qa_max_tokens'],validate)
  answers=[]
  for q in questions:
@@ -46,9 +46,10 @@ def answer_one(cfg,llm,question):
  def validate(_,obj):
   if not isinstance(obj.get('answer'),str) or not obj['answer'].strip():raise ValueError('A nonempty answer is required')
   if type(obj.get('insufficient_evidence')) is not bool:raise ValueError('insufficient_evidence must be boolean')
-  citations=obj.get('citations');allowed={'C:'+i for i in trace['chunk_ids']}|{'F:'+i for i in trace['fact_ids']}
+  citations=obj.get('citations');allowed=set(trace['citation_map'])
   if not isinstance(citations,list) or any(c not in allowed for c in citations):raise ValueError('Cite only provided evidence IDs')
   if not citations and not obj['insufficient_evidence']:raise ValueError('Cite supporting evidence or mark insufficiency')
+  obj['citations']=[trace['citation_map'][c] for c in citations]
   return obj
  good,errors=validated_generations(llm,'interactive',[('interactive',prompt)],cfg['qa_max_tokens'],validate)
  ret.g.close()

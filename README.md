@@ -105,7 +105,7 @@ These commands do not rebuild or re-extract anything:
 .conda/bin/python -m finance_graph ask 'KB Global Star 적금의 가입대상은 누구인가요?'
 ```
 
-`retrieve` prints selected facts, source chunks, product matches, and graph traversal routes without loading a model. `ask` additionally uses the local model to produce a Korean answer with source IDs. Returned statements represent this document snapshot, not independently verified current financial advice.
+`retrieve` prints selected facts, source chunks, product matches, and graph traversal routes without loading a model. `ask` additionally uses the local model to produce a Korean answer with source IDs. Short citation aliases in model context are mapped back to canonical graph IDs in the answer and retrieval trace. Returned statements represent this document snapshot, not independently verified current financial advice.
 
 A different config can be selected before the stage name:
 

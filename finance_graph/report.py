@@ -50,6 +50,6 @@ def report(cfg):
  for r in results:
   trace=load_json(out/'retrieval'/f'{r["id"]}.json');error=error_byid.get(r['id']);body=f'# {r["id"]} — {"correct" if r["correct"] else "incorrect"}\n\n## Question\n\n{r["question"]}\n\n## Model answer\n\n{r["answer"]}\n\nCitations: '+', '.join(r['citations'])+f'\n\n## Reference answer\n\n{r["ground_truth_answer"]}\n\n## Reference rationale\n\n{r["ground_truth_rationale"]}\n\n## Binary evaluation\n\n{r["reason"]}\n'
   if error:body+='\n## Error diagnosis\n\n'+json.dumps(error,ensure_ascii=False,indent=2)+'\n'
-  body+='\n## Retrieved context\n\n'+trace['context']+'\n';p=reports/'questions'/f'{r["id"]}.md';p.parent.mkdir(parents=True,exist_ok=True);p.write_text(body,encoding='utf-8')
+  body+='\n## Citation mapping\n\n```json\n'+json.dumps(trace['citation_map'],ensure_ascii=False,indent=2)+'\n```\n\n## Retrieved context\n\n'+trace['context']+'\n';p=reports/'questions'/f'{r["id"]}.md';p.parent.mkdir(parents=True,exist_ok=True);p.write_text(body,encoding='utf-8')
  print('REPORT '+str(reports/'evaluation_report.md'),flush=True)
  return reports/'evaluation_report.md'

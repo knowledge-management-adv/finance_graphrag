@@ -93,5 +93,10 @@ class Retriever:
    parts.append(block);used+=len(block);kept_c.append(cid)
   # Only label graph edges as returned when both endpoints are in the context subgraph.
   context='\n\n'.join(parts)
-  trace={'question':question,'matched_products':[self.products[p]['name'] for p in matches],'matched_product_ids':matches,'fact_ids':kept_f,'chunk_ids':kept_c,'selected_chunk_ids_before_budget':selected_c,'document_ids':sorted({self.chunks[c]['document_id'] for c in kept_c}),'chunk_routes':{c:reasons[c] for c in kept_c},'fact_scores':{f:fs.get(f,0) for f in kept_f},'context_chars':len(context),'context':context,'retrieval_config':{k:self.cfg[k] for k in ('retrieval_chunks','retrieval_facts','context_max_chars')}}
+  # Short context-local citations reduce copying errors; canonical graph IDs remain in the trace.
+  citation_map={**{f'F:{i+1}':'F:'+fid for i,fid in enumerate(kept_f)},**{f'C:{i+1}':'C:'+cid for i,cid in enumerate(kept_c)}}
+  for alias,canonical in citation_map.items():context=context.replace(canonical,alias)
+  # A fact can be quoted without loading its full chunk; do not expose uncitable chunk IDs.
+  context=re.sub(r'C:c_[0-9a-f]+','(연결 원문 청크 미포함)',context)
+  trace={'question':question,'matched_products':[self.products[p]['name'] for p in matches],'matched_product_ids':matches,'fact_ids':kept_f,'chunk_ids':kept_c,'selected_chunk_ids_before_budget':selected_c,'document_ids':sorted({self.chunks[c]['document_id'] for c in kept_c}),'chunk_routes':{c:reasons[c] for c in kept_c},'fact_scores':{f:fs.get(f,0) for f in kept_f},'context_chars':len(context),'context':context,'citation_map':citation_map,'retrieval_config':{k:self.cfg[k] for k in ('retrieval_chunks','retrieval_facts','context_max_chars')}}
   return trace
