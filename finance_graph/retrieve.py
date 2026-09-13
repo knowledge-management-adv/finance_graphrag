@@ -82,7 +82,7 @@ class Retriever:
   for fid in selected_f:
    f=self.facts[fid];names=[self.products[p]['name'] for p in sorted(self.g.doc_products.get(f['document_id'],set()))]
    scope=', '.join(names) if len(names)<=4 else '공통 약관 ('+str(len(names))+'개 상품 연결)'
-   line=f'[F:{fid}] {f["type"]}: {f["name"]}; 상품 범위: {scope}; 근거: '+','.join('C:'+c for c in self.g.targets(fid,'SUPPORTED_BY'))+'\n'+f['statement'][:650]
+   line=f'[F:{fid}] {f["type"]}: {f["name"]}; 상품 범위: {scope}; 근거: '+','.join('C:'+c for c in self.g.targets(fid,'SUPPORTED_BY'))+'\n'+f['statement'][:650]+(' [이하 생략: 연결된 원문 청크에서 전체 조건 확인]' if len(f['statement'])>650 else '')
    if used+len(line)>budget*.32:break
    parts.append(line);used+=len(line);kept_f.append(fid)
   parts.append('\n연결된 원문 청크')
@@ -98,5 +98,5 @@ class Retriever:
   for alias,canonical in citation_map.items():context=context.replace(canonical,alias)
   # A fact can be quoted without loading its full chunk; do not expose uncitable chunk IDs.
   context=re.sub(r'C:c_[0-9a-f]+','(연결 원문 청크 미포함)',context)
-  trace={'question':question,'matched_products':[self.products[p]['name'] for p in matches],'matched_product_ids':matches,'fact_ids':kept_f,'chunk_ids':kept_c,'selected_chunk_ids_before_budget':selected_c,'document_ids':sorted({self.chunks[c]['document_id'] for c in kept_c}),'chunk_routes':{c:reasons[c] for c in kept_c},'fact_scores':{f:fs.get(f,0) for f in kept_f},'context_chars':len(context),'context':context,'citation_map':citation_map,'retrieval_config':{k:self.cfg[k] for k in ('retrieval_chunks','retrieval_facts','context_max_chars')}}
+  trace={'question':question,'matched_products':[self.products[p]['name'] for p in matches],'matched_product_ids':matches,'fact_ids':kept_f,'truncated_fact_ids':[f for f in kept_f if len(self.facts[f]['statement'])>650],'chunk_ids':kept_c,'selected_chunk_ids_before_budget':selected_c,'document_ids':sorted({self.chunks[c]['document_id'] for c in kept_c}),'chunk_routes':{c:reasons[c] for c in kept_c},'fact_scores':{f:fs.get(f,0) for f in kept_f},'context_chars':len(context),'context':context,'citation_map':citation_map,'retrieval_config':{k:self.cfg[k] for k in ('retrieval_chunks','retrieval_facts','context_max_chars')}}
   return trace
