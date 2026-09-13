@@ -1,0 +1,18 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "title":"Finance chunk extraction",
+  "type":"object",
+  "required":["facts"],
+  "properties":{
+    "facts":{"type":"array","items":{
+      "type":"object",
+      "required":["type","name","units"],
+      "properties":{
+        "type":{"enum":["Rule","Condition","Requirement","Benefit","Restriction"]},
+        "name":{"type":"string","minLength":1},
+        "units":{"type":"array","minItems":1,"items":{"type":"string","pattern":"^U[1-9][0-9]*$"}},
+        "entities":{"type":"array","items":{"type":"object","required":["type","name"],"properties":{"type":{"enum":["Organization","Concept"]},"name":{"type":"string","minLength":1}}}}
+      }
+    }}
+  }
+}

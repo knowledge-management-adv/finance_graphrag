@@ -1,0 +1,17 @@
+{
+  "python": "3.12.13",
+  "platform": "macOS-26.5.1-arm64-arm-64bit",
+  "machine": "arm64",
+  "environment_prefix": "/Users/joonyeongs/Projects/BOAZ/finance_graphrag_v1/.conda",
+  "creation": "new isolated conda prefix, offline clone of reference environment",
+  "reference_mlx_source": "/Users/joonyeongs/Projects/mlx-lm",
+  "reference_mlx_git_revision": "254d153fdeb6f150edd4fc5a54f9828638481fa8",
+  "packages": {
+    "mlx": "0.32.0",
+    "mlx-lm": "0.31.3",
+    "mlx-metal": "0.32.0",
+    "transformers": "5.15.0",
+    "numpy": "2.5.2"
+  },
+  "model": "0d77464eeb233a2da68ebf9d7dc4edaac7db956d"
+}

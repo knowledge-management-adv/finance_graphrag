@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "dataset_root": "/Users/joonyeongs/Projects/document_parsing/output/적립식예금",
+  "benchmark_path": "/Users/joonyeongs/Projects/document_parsing/output/benchmark/benchmark.json",
+  "artifact_dir": "artifacts/v1",
+  "model_path": "/Users/joonyeongs/Projects/model-weights/hub/models--mlx-community--gemma-4-26b-a4b-it-4bit/snapshots/0d77464eeb233a2da68ebf9d7dc4edaac7db956d",
+  "model_id": "mlx-community/gemma-4-26b-a4b-it-4bit",
+  "model_revision": "0d77464eeb233a2da68ebf9d7dc4edaac7db956d",
+  "backend": "local_mlx",
+  "seed": 17,
+  "chunk_target_chars": 3400,
+  "chunk_max_chars": 5600,
+  "unit_max_chars": 1700,
+  "batch_size": 8,
+  "extraction_max_tokens": 2200,
+  "qa_max_tokens": 1600,
+  "evaluation_max_tokens": 900,
+  "context_max_chars": 27000,
+  "retrieval_chunks": 10,
+  "retrieval_facts": 28,
+  "stage_batch_sizes": {
+    "extraction": 8,
+    "qa": 3,
+    "evaluation": 8,
+    "diagnosis": 2,
+    "interactive": 1
+  }
+}
