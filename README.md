@@ -6,6 +6,8 @@ A complete, reproducible, local-LLM pipeline from Korean finance `document.md` f
 
 - [English ontology and rationale](docs/ontology.md)
 - [Extraction JSON schema](schemas/extraction.schema.json)
+- [V1 execution and parser amendments](docs/v1_implementation_notes.md)
+- [Bounded V2 proposal](docs/v2_proposal.md)
 - Persisted property graph: `artifacts/v1/graph.sqlite`
 - Portable graph: `artifacts/v1/graph_export/nodes.jsonl` and `edges.jsonl`
 - Evaluation report: `artifacts/v1/reports/evaluation_report.md`
@@ -67,17 +69,17 @@ The lock file records the reference MLX source path, which must exist or be repl
 
 The default corpus has 30 product directories and 121 `document.md` occurrences. Exact-content deduplication retains 58 document versions. Raw paragraphs and HTML table rows become 2,891 source units grouped into 180 chunks. Page comments and character spans are retained. Table rowspan/colspan values are expanded with parent-table provenance. Raw documents are stored inside the persisted graph so QA can continue after the original dataset moves.
 
-Use a new `artifact_dir` for a modified corpus, ontology, prompt, model, or retrieval configuration. A frozen V1 run refuses implementation/graph changes. Generation cache keys include stage, prompt, model revision, sampling settings, token limit, and batch size. An interrupted batch is recomputed; completed batches are reused. Invalid JSON or source references receive at most two primary-model repair attempts. Only remaining failed chunks may then use the configured alternate local model (Qwen3.6) with at most one format repair; failures remain explicit. This bounded local fallback does not call a remote API.
+Use a new `artifact_dir` for a modified corpus, ontology, prompt, model, or retrieval configuration. A frozen V1 run refuses implementation/graph changes. Generation cache keys include stage, prompt, model revision, sampling settings, token limit, and batch size. An interrupted batch is recomputed; completed batches are reused. The final answer parser accepts exact citation IDs in optional display brackets, reads the last complete model-emitted answer JSON, and records an omitted auxiliary `insufficient_evidence` flag as `null` (unreported). Invalid JSON or source references receive at most two primary-model repair attempts. Only remaining failed chunks may then use the configured alternate local model (Qwen3.6) with at most one format repair; failures remain explicit. This bounded local fallback does not call a remote API.
 
 ## Run the complete pipeline
 
 ```bash
-.conda/bin/python -u -m finance_graph all
-# Equivalent:
 ./scripts/run_all.sh
+# Core pipeline without the supplemental post-evaluation audit:
+.conda/bin/python -u -m finance_graph all
 ```
 
-The first run ingests documents, extracts all chunks with the local LLM, validates and persists the graph, exports question-only inputs, freezes V1, generates all answers, evaluates every answer, diagnoses failures, and writes reports. Running `all` again resumes a frozen run with its existing graph and cached generations. Source changes or modifications to frozen system files require a new output directory. Full local inference can take a substantial amount of time; progress is printed after each batch.
+The wrapper also runs `scripts/post_evaluation_audit.py` after evaluation; it adds quote-only diagnostic metrics and the preserved manual review without changing answers or grades. The core first run ingests documents, extracts all chunks with the local LLM, validates and persists the graph, exports question-only inputs, freezes V1, generates all answers, evaluates every answer, diagnoses failures, and writes reports. Running `all` again resumes a frozen run with its existing graph and cached generations. Source changes or modifications to frozen system files require a new output directory. Full local inference can take a substantial amount of time; progress is printed after each batch.
 
 Individual stages are available for inspection or controlled execution:
 
