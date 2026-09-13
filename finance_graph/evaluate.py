@@ -12,6 +12,8 @@ def evaluate(cfg,llm):
  if am['partial_run']:raise ValueError('Cannot evaluate a partial run as the full benchmark')
  answers=read_jsonl(out/'qa/answers.jsonl')
  if digest(answers)!=am['answers_hash']:raise ValueError('Frozen answers have changed')
+ question_manifest=load_json(out/'questions/manifest.json')
+ if digest(Path(cfg['benchmark_path']).read_text())!=question_manifest['source_file_sha256']:raise ValueError('Benchmark file changed after question projection')
  gold=load_json(cfg['benchmark_path']);byid={q['id']:q for q in gold};answer_ids={a['id'] for a in answers}
  if answer_ids!=set(byid) or len(answers)!=len(gold):raise ValueError('Answer and benchmark IDs must match exactly')
  instruction=(ROOT/'prompts/evaluate.txt').read_text();requests=[]

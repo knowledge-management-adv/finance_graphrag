@@ -45,7 +45,7 @@ Statements are evidence-bound textual assertions, not fully normalized subject�
 | NEXT_CHUNK | Chunk → Chunk | The next chunk in the same document. | — |
 | ASSERTS | Document → Fact | A document asserts the extracted fact. | — |
 | SUPPORTED_BY | Fact → Chunk | The fact is supported by units included in this extraction chunk. | `unit_ids` |
-| MENTIONS | Fact → Organization or Concept | A selected evidentiary statement explicitly mentions this entity. | `unit_ids` |
+| MENTIONS | Fact → Organization or Concept | A selected evidentiary statement explicitly mentions this entity (mechanical spacing/punctuation normalization is allowed). | `unit_ids` |
 
 `Fact` in this table denotes Rule, Condition, Requirement, Benefit, or Restriction. Each MENTIONS edge is supported by its fact's evidence. No implicit entity relationship is promoted to a fact. Product-to-fact traversal is `Product ← DESCRIBES — Source — HAS_VERSION → Document — ASSERTS → Fact`.
 
@@ -59,7 +59,7 @@ Every semantic fact must reference at least one valid unit and at least one cont
 
 Identifiers use SHA-256-derived stable IDs. Documents deduplicate by exact raw-content hash; sources never deduplicate across paths. Products deduplicate by their original directory names only. Entities merge by exact Unicode/whitespace-normalized spelling and type, with no fuzzy semantic merge. Facts from different documents remain separate, preserving disagreements and date distinctions.
 
-The extractor must return only permitted types and existing unit IDs. Unsupported references and malformed outputs are rejected and retried at most twice. Entity names absent from the selected statement are rejected. Final graph validation checks edge endpoints, allowed edge signatures, source-to-document hashes, complete chunk extraction status, and evidence consistency. Failed chunks are visible and prevent a successful complete build.
+The extractor must return only permitted types and existing unit IDs. Unsupported references and malformed outputs are rejected and retried at most twice. Entity names absent from the selected statement after mechanical spacing/punctuation normalization are rejected. Final graph validation checks edge endpoints, allowed edge signatures, source-to-document hashes, complete chunk extraction status, and evidence consistency. Failed chunks are visible and prevent a successful complete build.
 
 ## Rationale and tradeoffs
 
