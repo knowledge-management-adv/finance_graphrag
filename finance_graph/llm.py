@@ -43,7 +43,7 @@ class LocalLLM:
    print(f'{stage.upper()} {min(start+len(batch),len(pending))}/{len(pending)} new requests; batch_seconds={time.time()-t:.1f}; tokens_per_second={response.stats.generation_tps:.1f}',flush=True)
   return result
 
-def validated_generations(llm,stage,requests,max_tokens,validator,max_retries=2):
+def validated_generations(llm,stage,requests,max_tokens,validator,max_retries=2,parser=parse_json):
  """Persist raw attempts; bounded retries never accept a fabricated fallback."""
  original=dict(requests);pending=list(requests);good={};errors={}
  for attempt in range(max_retries+1):
@@ -54,7 +54,7 @@ def validated_generations(llm,stage,requests,max_tokens,validator,max_retries=2)
    rec=generated[rid]
    try:
     if rec['possibly_truncated']:raise ValueError('Output reached token limit')
-    value=validator(rid,parse_json(rec['raw_text']))
+    value=validator(rid,parser(rec['raw_text']))
     good[rid]={'value':value,'request_hash':rec['request_hash'],'attempt':attempt,'generated_tokens':rec['generated_tokens']};errors.pop(rid,None)
    except (ValueError,KeyError,TypeError) as e:
     errors[rid]=str(e)

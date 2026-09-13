@@ -56,6 +56,10 @@ class PipelineTests(unittest.TestCase):
  def test_external_api_never_enabled_implicitly(self):
   self.cfg['backend']='upstage'
   with self.assertRaises(ValueError):LocalLLM(self.cfg)
+ def test_answer_parser_preserves_last_complete_model_revision(self):
+  from finance_graph.qa import parse_answer_json
+  raw='```json\n{"answer":"초안","citations":["C:1"]}\n```\n수정 답변\n```json\n{"answer":"수정본","citations":["[C:2]"]}\n```'
+  self.assertEqual(parse_answer_json(raw),{'answer':'수정본','citations':['[C:2]']})
  def test_json_fences_and_boolean_type(self):
   self.assertEqual(parse_json('```json\n{"correct": false}\n```'),{'correct':False})
 
@@ -79,7 +83,7 @@ class EndToEndTests(unittest.TestCase):
     result={}
     for rid,prompt in requests:
      if stage=='extraction':obj={'facts':[{'type':'Rule','name':'계약 조건','units':re.findall(r'\[(U\d+)\]',prompt)}]}
-     elif stage=='qa':obj={'answer':'12개월' if rid=='test_correct' else '24개월','citations':['[C:'+re.search(r'\[C:([^\]]+)\]',prompt).group(1)+']'],'insufficient_evidence':False}
+     elif stage=='qa':obj={'answer':'12개월' if rid=='test_correct' else '24개월','citations':['[C:'+re.search(r'\[C:([^\]]+)\]',prompt).group(1)+']'],}
      elif stage=='evaluation':obj={'correct':rid=='test_correct','reason':'Synthetic fixture judgment'}
      elif stage=='diagnosis':obj={'primary_category':'answer_generation','reason':'Synthetic fixture error','confidence':'high','secondary_categories':[]}
      else:raise AssertionError(stage)
