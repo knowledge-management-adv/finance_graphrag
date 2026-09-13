@@ -59,4 +59,35 @@ class PipelineTests(unittest.TestCase):
  def test_json_fences_and_boolean_type(self):
   self.assertEqual(parse_json('```json\n{"correct": false}\n```'),{'correct':False})
 
+
+class EndToEndTests(unittest.TestCase):
+ setUp=PipelineTests.setUp
+ tearDown=PipelineTests.tearDown
+ source=PipelineTests.source
+ def test_complete_pipeline_with_isolated_synthetic_model_fixture(self):
+  from finance_graph.extract import extract
+  from finance_graph.qa import answer_questions,freeze
+  from finance_graph.evaluate import evaluate,diagnose
+  from finance_graph.report import report
+  import re
+  text='# 가 적금\n\n# 계약기간\n\n계약기간은 12개월입니다.\n\n# 금리\n\n우대금리는 연 1.0%p입니다.'
+  p=self.source('가 적금','특약',text)
+  source={'document_path':str(p),'relative_path':'가 적금/특약/document.md','sha256':digest(text),'evidence':'계약기간은 12개월입니다.'}
+  write_json(self.cfg['benchmark_path'],[{'id':i,'question':'가 적금의 계약기간은?','answer':'12개월','answer_aliases':[],'rationale':'계약기간은 12개월입니다.','qa_type':'synthetic','difficulty':'easy','reasoning_type':'lookup','sources':[source]} for i in ('test_correct','test_incorrect')])
+  class SyntheticFixture:
+   def generate_many(self,stage,requests,max_tokens):
+    result={}
+    for rid,prompt in requests:
+     if stage=='extraction':obj={'facts':[{'type':'Rule','name':'계약 조건','units':re.findall(r'\[(U\d+)\]',prompt)}]}
+     elif stage=='qa':obj={'answer':'12개월' if rid=='test_correct' else '24개월','citations':['C:'+re.search(r'\[C:([^\]]+)\]',prompt).group(1)],'insufficient_evidence':False}
+     elif stage=='evaluation':obj={'correct':rid=='test_correct','reason':'Synthetic fixture judgment'}
+     elif stage=='diagnosis':obj={'primary_category':'answer_generation','reason':'Synthetic fixture error','confidence':'high','secondary_categories':[]}
+     else:raise AssertionError(stage)
+     result[rid]={'raw_text':json.dumps(obj,ensure_ascii=False),'possibly_truncated':False,'request_hash':digest(prompt),'generated_tokens':10}
+    return result
+  llm=SyntheticFixture();ingest(self.cfg);extract(self.cfg,llm);build_graph(self.cfg);prepare_questions(self.cfg);freeze(self.cfg);answer_questions(self.cfg,llm);rs=evaluate(self.cfg,llm);ds=diagnose(self.cfg,llm);path=report(self.cfg)
+  self.assertEqual(sum(r['correct'] for r in rs),1);self.assertEqual(len(ds),1);self.assertIn('50.0%',path.read_text());self.assertTrue((path.parent/'per_question.csv').exists())
+  # Cached-graph retrieval works after source files are removed.
+  p.unlink();ret=Retriever(self.cfg);self.assertIn('12개월',ret.retrieve('가 적금 계약기간')['context']);ret.g.close()
+
 if __name__=='__main__':unittest.main()
