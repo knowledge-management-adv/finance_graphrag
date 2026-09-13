@@ -71,6 +71,15 @@ def validate_graph(cfg):
  for n in g.typed('Document'):
   p=n['properties']
   if digest(p['text'])!=p['sha256']:errors.append('Document hash mismatch '+n['id'])
+ for src in g.typed('Source'):
+  versions=g.targets(src['id'],'HAS_VERSION');products=g.targets(src['id'],'DESCRIBES')
+  if len(versions)!=1 or len(products)!=1:errors.append('Source needs exactly one version and product '+src['id'])
+  elif src['properties']['sha256']!=g.props(versions[0])['sha256']:errors.append('Source version hash mismatch '+src['id'])
+ for chunk in g.typed('Chunk'):
+  p=chunk['properties']
+  if any(uid not in g.units or g.units[uid]['document_id']!=p['document_id'] for uid in p['unit_ids']):errors.append('Invalid chunk units '+chunk['id'])
+ for entity in [n for n in g.nodes.values() if n['type'] in ENTITY_TYPES]:
+  if not g.predecessors(entity['id'],'MENTIONS'):errors.append('Entity missing semantic provenance '+entity['id'])
  for f in g.facts():
   p=f['properties'];cs=g.targets(f['id'],'SUPPORTED_BY')
   if not cs or not p['unit_ids']:errors.append('Missing fact provenance '+f['id']);continue
@@ -81,6 +90,11 @@ def validate_graph(cfg):
  for e in g.edges:
   a,b=SIGNATURES[e['type']]
   if g.nodes[e['source']]['type'] not in a or g.nodes[e['target']]['type'] not in b:errors.append('Invalid edge '+e['id'])
+  if e['type']=='NEXT_CHUNK':
+   src,dst=g.props(e['source']),g.props(e['target'])
+   if src['document_id']!=dst['document_id'] or dst['ordinal']!=src['ordinal']+1:errors.append('Invalid adjacent-chunk edge '+e['id'])
+  if e['type']=='MENTIONS':
+   if not e['properties'].get('unit_ids') or any(u not in g.props(e['source'])['unit_ids'] for u in e['properties']['unit_ids']):errors.append('Invalid mention provenance '+e['id'])
  for u in g.units.values():
   raw=g.props(u['document_id'])['text']
   if not 0<=u['raw_start']<u['raw_end']<=len(raw):errors.append('Invalid raw span '+u['id'])
