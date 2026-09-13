@@ -20,7 +20,7 @@ class BM25:
   self.avg=sum(self.length.values())/max(1,self.n)
  def scores(self,q,allowed=None):
   scores=collections.defaultdict(float)
-  for term in set(terms(q)):
+  for term in sorted(set(terms(q))):
    postings=self.postings.get(term,[]);idf=math.log(1+(self.n-len(postings)+.5)/(len(postings)+.5))
    for id,tf in postings:
     if allowed is not None and id not in allowed:continue
