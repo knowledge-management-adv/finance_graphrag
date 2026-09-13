@@ -67,7 +67,7 @@ The lock file records the reference MLX source path, which must exist or be repl
 
 The default corpus has 30 product directories and 121 `document.md` occurrences. Exact-content deduplication retains 58 document versions. Raw paragraphs and HTML table rows become 2,891 source units grouped into 180 chunks. Page comments and character spans are retained. Table rowspan/colspan values are expanded with parent-table provenance. Raw documents are stored inside the persisted graph so QA can continue after the original dataset moves.
 
-Use a new `artifact_dir` for a modified corpus, ontology, prompt, model, or retrieval configuration. A frozen V1 run refuses implementation/graph changes. Generation cache keys include stage, prompt, model revision, sampling settings, token limit, and batch size. An interrupted batch is recomputed; completed batches are reused. Invalid JSON or source references receive at most two repair attempts, and failures remain explicit.
+Use a new `artifact_dir` for a modified corpus, ontology, prompt, model, or retrieval configuration. A frozen V1 run refuses implementation/graph changes. Generation cache keys include stage, prompt, model revision, sampling settings, token limit, and batch size. An interrupted batch is recomputed; completed batches are reused. Invalid JSON or source references receive at most two primary-model repair attempts. Only remaining failed chunks may then use the configured alternate local model (Qwen3.6) with at most one format repair; failures remain explicit. This bounded local fallback does not call a remote API.
 
 ## Run the complete pipeline
 

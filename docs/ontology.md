@@ -59,7 +59,7 @@ Every semantic fact must reference at least one valid unit and at least one cont
 
 Identifiers use SHA-256-derived stable IDs. Documents deduplicate by exact raw-content hash; sources never deduplicate across paths. Products deduplicate by their original directory names only. Entities merge by exact Unicode/whitespace-normalized spelling and type, with no fuzzy semantic merge. Facts from different documents remain separate, preserving disagreements and date distinctions.
 
-The extractor must return only permitted types and existing unit IDs. Unsupported references and malformed outputs are rejected and retried at most twice. Entity names absent from the selected statement after mechanical spacing/punctuation normalization are rejected. Final graph validation checks edge endpoints, allowed edge signatures, source-to-document hashes, complete chunk extraction status, and evidence consistency. Failed chunks are visible and prevent a successful complete build.
+The extractor must return only permitted types and existing unit IDs. Unsupported references and malformed outputs are rejected and retried at most twice with the primary local model. If configured, only remaining failed chunks may use one alternate local model with at most one additional format repair; every attempt retains its actual model identity. Entity names absent from the selected statement after mechanical spacing/punctuation normalization are rejected. Final graph validation checks edge endpoints, allowed edge signatures, source-to-document hashes, complete chunk extraction status, and evidence consistency. Failed chunks are visible and prevent a successful complete build.
 
 ## Rationale and tradeoffs
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 from pathlib import Path
 from .common import *
-from .llm import validated_generations
+from .llm import validated_generations,LocalLLM
 
 def extract(cfg,llm,limit=None):
  out=Path(cfg['artifact_dir']);chunks=read_jsonl(out/'corpus/chunks.jsonl');units={u['id']:u for u in read_jsonl(out/'corpus/units.jsonl')};docs={d['id']:d for d in read_jsonl(out/'corpus/documents.jsonl')}
@@ -31,12 +31,23 @@ def extract(cfg,llm,limit=None):
   if not valid and len(byid[cid]['text'])>250:raise ValueError('Empty extraction for a substantive source chunk')
   return valid
  good,errors=validated_generations(llm,'extraction',requests,cfg['extraction_max_tokens'],validate)
+ fallback_successes=0
+ if errors and cfg.get('local_extraction_fallback'):
+  # One bounded alternate-local-model pass (plus at most one format repair).
+  # Only failed chunks are sent; successful primary extractions stay unchanged.
+  fallback_cfg={**cfg,**cfg['local_extraction_fallback']}
+  llm.unload();alternate=LocalLLM(fallback_cfg)
+  selected=[(cid,prompt) for cid,prompt in requests if cid in errors]
+  alt_good,alt_errors=validated_generations(alternate,'extraction_fallback',selected,cfg['extraction_max_tokens'],validate,max_retries=1)
+  for cid,rec in alt_good.items():
+   rec['attempt']+=3;rec['fallback_model']=fallback_cfg['model_id'];good[cid]=rec;errors.pop(cid,None)
+  errors.update(alt_errors);fallback_successes=len(alt_good);alternate.unload()
  facts=[]
  for cid,rec in good.items():
   write_json(out/'extraction/chunks'/f'{cid}.json',rec)
   for fact in rec['value']:fact['extraction_run']=rec['request_hash'];facts.append(fact)
  covered={uid for f in facts for uid in f['unit_ids']};allunits={uid for c in chunks for uid in c['unit_ids']}
- stats={'requested_chunks':len(chunks),'completed_chunks':len(good),'failed_chunks':errors,'facts':len(facts),'covered_units':len(covered),'total_units':len(allunits),'unit_coverage':len(covered)/max(1,len(allunits)),'rejected_entities':sum(len(f['rejected_entities']) for f in facts),'partial_run':bool(limit),'created_at':now()}
+ stats={'requested_chunks':len(chunks),'completed_chunks':len(good),'failed_chunks':errors,'facts':len(facts),'covered_units':len(covered),'total_units':len(allunits),'unit_coverage':len(covered)/max(1,len(allunits)),'rejected_entities':sum(len(f['rejected_entities']) for f in facts),'partial_run':bool(limit),'fallback_successes':fallback_successes,'created_at':now()}
  write_jsonl(out/'extraction/facts.jsonl',facts);write_json(out/'extraction/status.json',stats)
  print('EXTRACTION_SUMMARY '+json.dumps(stats,ensure_ascii=False),flush=True)
  if errors:raise RuntimeError(f'{len(errors)} chunks failed extraction; inspect logs and resume')

@@ -15,6 +15,12 @@ class LocalLLM:
   import mlx.core as mx
   mx.random.seed(self.cfg['seed']);t=time.time()
   self.model,self.tokenizer=load(self.cfg['model_path']);print(f'LOCAL_MODEL_LOADED seconds={time.time()-t:.1f}',flush=True)
+ def unload(self):
+  self.model=None;self.tokenizer=None
+  import gc
+  gc.collect()
+  import mlx.core as mx
+  mx.clear_cache()
  def generate_many(self,stage,requests,max_tokens):
   out=Path(self.cfg['artifact_dir'])/'llm'/stage;out.mkdir(parents=True,exist_ok=True)
   result={};pending=[]
