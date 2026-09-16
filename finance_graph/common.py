@@ -23,8 +23,24 @@ def write_jsonl(p,items):
  os.replace(tmp,p)
 def read_jsonl(p):
  with Path(p).open(encoding='utf-8') as f:return [json.loads(l) for l in f if l.strip()]
-def config(path=None):
- c=load_json(path or ROOT/'config.json');c['artifact_dir']=str((ROOT/c['artifact_dir']).resolve());return c
+def config(path=None,backend=None,artifact_dir=None):
+ c=load_json(path or ROOT/'config.json')
+ if backend:c['backend']=backend
+ if c['backend'] not in ('local_mlx','upstage'):raise ValueError('backend must be local_mlx or upstage')
+ if c['backend']=='upstage':
+  c['model_id']=c['api']['model'];c['model_revision']='provider-managed'
+  c['local_extraction_fallback']=None
+  # Keep API runs away from the default published local run.
+  c['artifact_dir']=c.get('api_artifact_dir',c['artifact_dir']+'_upstage')
+ if artifact_dir:c['artifact_dir']=artifact_dir
+ for field in ('artifact_dir','dataset_root','benchmark_path','model_path'):
+  if c.get(field):c[field]=str((ROOT/Path(c[field]).expanduser()).resolve())
+ if c.get('local_extraction_fallback'):
+  fallback=c['local_extraction_fallback']
+  fallback['model_path']=str((ROOT/Path(fallback['model_path']).expanduser()).resolve())
+ if c.get('api'):
+  c['api']['key_file']=str((ROOT/Path(c['api']['key_file']).expanduser()).resolve())
+ return c
 def parse_json(s):
  s=re.sub(r'<think>.*?</think>','',s,flags=re.S).strip()
  s=re.sub(r'^```(?:json)?\s*|\s*```$','',s).strip()

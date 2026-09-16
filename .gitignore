@@ -6,3 +6,12 @@ artifacts/
 *.log
 .DS_Store
 .env
+
+# Local API credentials
+.secrets/
+
+# Separate API/local environments and personal configuration
+.venv*/
+config.user.json
+data/
+models/

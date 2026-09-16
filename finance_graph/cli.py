@@ -2,13 +2,23 @@ from __future__ import annotations
 import argparse,json
 from pathlib import Path
 from .common import config,ROOT,load_json,digest
-from .llm import LocalLLM
+from .llm import create_llm
 
 def main():
- p=argparse.ArgumentParser(description='Local Korean finance GraphRAG pipeline');p.add_argument('--config',default=str(ROOT/'config.json'));sub=p.add_subparsers(dest='command',required=True)
+ p=argparse.ArgumentParser(description='Korean finance GraphRAG pipeline (local MLX or Upstage API)');p.add_argument('--config',default=str(ROOT/'config.json'));p.add_argument('--backend',choices=['local_mlx','upstage']);p.add_argument('--artifact-dir');sub=p.add_subparsers(dest='command',required=True)
  for name in ('ingest','extract','build-graph','questions','freeze','qa','evaluate','diagnose','report','validate','all'):sub.add_parser(name)
+ sub.add_parser('llm-test')
  ask=sub.add_parser('ask');ask.add_argument('question');ret=sub.add_parser('retrieve');ret.add_argument('question')
- a=p.parse_args();c=config(a.config);llm=LocalLLM(c);out=Path(c['artifact_dir'])
+ a=p.parse_args();c=config(a.config,backend=a.backend,artifact_dir=a.artifact_dir);llm=create_llm(c);out=Path(c['artifact_dir'])
+ if a.command=='llm-test':
+  prompt='An $80 item gets a 20% discount, then 10% tax is added. What is the final price? Answer with only the dollar amount.'
+  kwargs={'use_cache':False} if c['backend']=='upstage' else {}
+  try:
+   rec=llm.generate_many('smoke_test',[('smoke_test',prompt)],4096,**kwargs)['smoke_test']
+   print(json.dumps({'backend':c['backend'],'model':c['model_id'],'answer':rec['raw_text'],'possibly_truncated':rec['possibly_truncated']},ensure_ascii=False,indent=2))
+   if rec['possibly_truncated'] or not rec['raw_text'].strip():raise RuntimeError('Smoke test did not return a complete answer')
+  finally:llm.unload()
+  return
  from .ingest import ingest
  from .extract import extract
  from .graph import build_graph,validate_graph

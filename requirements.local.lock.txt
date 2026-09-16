@@ -15,7 +15,7 @@ markdown-it-py==4.2.0
 MarkupSafe==3.0.3
 mdurl==0.1.2
 mlx==0.32.0
-mlx-lm @ file:///Users/joonyeongs/Projects/mlx-lm
+mlx-lm==0.31.3
 mlx-metal==0.32.0
 numpy==2.5.2
 packaging==26.2

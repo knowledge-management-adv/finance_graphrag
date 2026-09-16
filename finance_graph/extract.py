@@ -32,7 +32,7 @@ def extract(cfg,llm,limit=None):
   return valid
  good,errors=validated_generations(llm,'extraction',requests,cfg['extraction_max_tokens'],validate)
  fallback_successes=0
- if errors and cfg.get('local_extraction_fallback'):
+ if errors and cfg['backend']=='local_mlx' and cfg.get('local_extraction_fallback'):
   # One bounded alternate-local-model pass (plus at most one format repair).
   # Only failed chunks are sent; successful primary extractions stay unchanged.
   fallback_cfg={**cfg,**cfg['local_extraction_fallback']}

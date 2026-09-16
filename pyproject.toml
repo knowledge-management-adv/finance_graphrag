@@ -5,9 +5,12 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "boaz-finance-graphrag"
 version = "0.1.0"
-description = "Source-grounded Korean finance property graph and local-LLM GraphRAG"
+description = "Source-grounded Korean finance property graph and selectable local/API GraphRAG"
 requires-python = ">=3.12"
-dependencies = ["mlx-lm==0.31.3", "numpy==2.5.2"]
+dependencies = ["openai>=1.0,<3"]
+
+[project.optional-dependencies]
+local = ["mlx-lm==0.31.3", "numpy==2.5.2"]
 
 [project.scripts]
 finance-graph = "finance_graph.cli:main"

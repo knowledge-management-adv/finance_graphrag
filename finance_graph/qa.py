@@ -26,7 +26,7 @@ def freeze(cfg):
  existing=out/'run_freeze.json'
  if existing.exists():
   old=load_json(existing)
-  if old['graph_sha256']!=record['graph_sha256'] or old['files']!=record['files'] or old['questions_hash']!=record['questions_hash']:raise ValueError('Frozen V1 changed. Use a new artifact_dir for a different system version.')
+  if old['graph_sha256']!=record['graph_sha256'] or old['files']!=record['files'] or old['questions_hash']!=record['questions_hash'] or old['configuration']!=record['configuration']:raise ValueError('Frozen V1 changed. Use a new artifact_dir for a different system version.')
  else:write_json(existing,record)
  return record
 

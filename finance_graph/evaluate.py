@@ -38,7 +38,7 @@ def evaluate(cfg,llm):
   items=collections.defaultdict(list)
   for r in results:items[str(r[field])].append(r['correct'])
   groups[field]={k:{'correct':sum(v),'total':len(v),'accuracy':sum(v)/len(v)} for k,v in sorted(items.items())}
- summary={'created_at':now(),'total':n,'correct':correct,'incorrect':n-correct,'accuracy':p,'wilson_95_interval':[center-half,center+half],'by_group':groups,'judge_backend':'local_mlx','judge_model':cfg['model_id'],'same_model_as_answerer':True,'answers_hash':am['answers_hash'],'all_judgments_binary':True}
+ summary={'created_at':now(),'total':n,'correct':correct,'incorrect':n-correct,'accuracy':p,'wilson_95_interval':[center-half,center+half],'by_group':groups,'judge_backend':cfg['backend'],'judge_model':cfg['model_id'],'same_model_as_answerer':True,'answers_hash':am['answers_hash'],'all_judgments_binary':True}
  write_jsonl(out/'evaluation/results.jsonl',results);write_json(out/'evaluation/summary.json',summary);print('EVALUATION_SUMMARY '+json.dumps(summary,ensure_ascii=False),flush=True);return results
 
 def evidence_metrics(cfg):
